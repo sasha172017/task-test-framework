@@ -87,23 +87,36 @@ class Application extends Config
             $value = $item['value'];
             switch ($name) {
                 case 'name':
-                    if ((trim($value) == '') || strlen($value) > 64 || preg_match('/\d+/', $value)) {
-                        $errors[$name] = 'Имя, обязательное поле, не должно содержать цифр и не быть больше 64 символов';
+                    if (strlen(trim($value)) == 0) {
+                        $errors[$name] = 'Имя - обязательное поле';
+                    }
+                    if (sizeof(array_intersect(range(0, 9), str_split($value))) > 0) {
+                        $errors[$name] = 'Поле Имя не должно содержать цифр';
+                    }
+                    if (strlen($value) > 64) {
+                        $errors[$name] = 'Поле Имя не должно быть больше 64 символов';
                     }
                     break;
                 case 'phone':
-                    if (!preg_match('/^\+\d{1,3}\s??\(\d{2,3}\)\s??\d{3}\-\d{2}\-?\d{2}$/m', $value) || (trim($value)== '')) {
-                        $errors[$name] = 'Телефон, обязательное поле, должно быть в правильном международном формате. Например +38 (067) 123-45-67';
+                    $value = strlen(filter_var($value, FILTER_SANITIZE_NUMBER_INT));
+                    if ($value > 16 || $value < 10) {
+                        $errors[$name] = 'Поле Телефон должно быть в правильном международном формате. Например +38 (067) 123-45-67';
+                    }
+                    if (strlen(trim($value)) == 0) {
+                        $errors[$name] = 'Телефон - обязательное поле';
                     }
                     break;
                 case 'email':
-                    if (!trim($value) == '' && !preg_match('/^.+\@.+\..+$/', $value)) {
-                        $errors[$name] = 'E-mail должeн быть либо пустым либо содержать валидный адрес e-mail';
+                    if (strlen(trim($value)) != 0 && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
+                        $errors[$name] = 'E-mail должeн содержать валидный адрес e-mail';
                     }
                     break;
                 case 'comment':
-                    if (!trim($value) == '' && (preg_match('/[\<\>]+/', $value) || strlen($value) > 1024)) {
-                        $errors[$name] = 'поле Комментарий не должно содержать тэгов и быть больше 1024 символов';
+                    if (strlen(trim($value)) != 0 && $value != strip_tags($value)) {
+                        $errors[$name] = 'поле Комментарий не должно содержать тэгов';
+                    }
+                    if (strlen($value) > 1024) {
+                        $errors[$name] = 'поле Комментарий не должно быть больше 1024 символов';
                     }
                     break;
             }
